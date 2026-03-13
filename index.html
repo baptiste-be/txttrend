@@ -6,69 +6,87 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: Arial, sans-serif;
     background:#000;
     color:#fff;
+    font-family: Inter, Arial, sans-serif;
   }
 
-  /* PAGE NORMALE */
-  .container {
+  /* PAGE PRINCIPALE */
+  .ui {
     padding:20px;
-    max-width:900px;
+    max-width:700px;
     margin:auto;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
   }
 
   textarea {
     width:100%;
-    height:180px;
+    height:160px;
     background:#111;
+    border:1px solid #333;
     color:#fff;
-    border:1px solid #444;
-    padding:10px;
+    padding:12px;
     font-size:16px;
+    border-radius:8px;
+    resize:none;
   }
 
-  label { display:block; margin-top:15px; font-size:14px; }
-
-  input[type="range"] { width:100%; }
+  .row {
+    display:flex;
+    gap:10px;
+  }
 
   button {
-    margin-top:15px;
-    padding:12px 20px;
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:8px;
     font-size:14px;
     text-transform:uppercase;
+    font-weight:600;
     cursor:pointer;
-    border:none;
   }
 
-  #start { background:white; color:black; }
-  #invert { background:black; color:white; border:1px solid white; }
+  #start { background:#fff; color:#000; }
+  #mirror { background:#000; color:#fff; border:1px solid #fff; }
+
+  input[type="range"] {
+    width:100%;
+  }
 
   /* MODE TEXTE GÉANT */
-  #fullscreenMode {
+  #fullscreen {
     display:none;
     position:fixed;
     inset:0;
-    background:black;
-    color:white;
+    background:#000;
     overflow:hidden;
   }
 
-  #scrollWrapper {
+  #wrapper {
     position:absolute;
     top:50%;
     transform:translateY(-50%);
     white-space:nowrap;
   }
 
-  #scrollText {
+  #text {
     display:inline-block;
     font-weight:900;
     text-transform:uppercase;
     white-space:nowrap;
+    line-height:1;
   }
 
-  @keyframes scrollSide {
+  /* Miroir */
+  .mirror {
+    transform:scaleX(-1);
+  }
+
+  /* Défilement */
+  @keyframes scroll {
     from { transform:translateX(100%); }
     to { transform:translateX(-200%); }
   }
@@ -76,77 +94,65 @@
 </head>
 <body>
 
-<div class="container">
-  <h1>txttrend</h1>
-  <p>Écris ton texte, choisis la vitesse et le style, puis lance-le.</p>
+<div class="ui">
+  <textarea id="input" placeholder="Écris ici..."></textarea>
 
-  <textarea id="textInput" placeholder="Ton texte ici..."></textarea>
-
-  <label>Vitesse du défilement</label>
+  <label>Vitesse</label>
   <input type="range" id="speed" min="5" max="60" value="20">
 
-  <label>Taille du texte (en % de l’écran)</label>
-  <input type="range" id="size" min="5" max="30" value="15">
+  <label>Taille du texte</label>
+  <input type="range" id="size" min="10" max="40" value="20">
 
-  <label>Espacement des lettres</label>
-  <input type="range" id="spacing" min="0" max="50" value="5">
-
-  <button id="start">Lancer le texte</button>
-  <button id="invert">Mode inversé</button>
+  <div class="row">
+    <button id="start">Lancer</button>
+    <button id="mirror">Miroir</button>
+  </div>
 </div>
 
-<!-- MODE PLEIN ÉCRAN -->
-<div id="fullscreenMode">
-  <div id="scrollWrapper">
-    <div id="scrollText"></div>
+<div id="fullscreen">
+  <div id="wrapper">
+    <div id="text"></div>
   </div>
 </div>
 
 <script>
-  const startBtn = document.getElementById("start");
-  const invertBtn = document.getElementById("invert");
-  const textInput = document.getElementById("textInput");
-  const fullscreen = document.getElementById("fullscreenMode");
-  const scrollText = document.getElementById("scrollText");
-  const wrapper = document.getElementById("scrollWrapper");
-
+  const input = document.getElementById("input");
   const speed = document.getElementById("speed");
   const size = document.getElementById("size");
-  const spacing = document.getElementById("spacing");
+  const start = document.getElementById("start");
+  const mirrorBtn = document.getElementById("mirror");
 
-  let inverted = false;
+  const fullscreen = document.getElementById("fullscreen");
+  const text = document.getElementById("text");
 
-  invertBtn.onclick = () => {
-    inverted = !inverted;
-    invertBtn.textContent = inverted ? "Mode normal" : "Mode inversé";
+  let mirrored = false;
+
+  mirrorBtn.onclick = () => {
+    mirrored = !mirrored;
+    mirrorBtn.textContent = mirrored ? "Normal" : "Miroir";
+    text.classList.toggle("mirror", mirrored);
   };
 
-  startBtn.onclick = () => {
-    const txt = textInput.value.trim();
-    if (!txt) return;
+  start.onclick = () => {
+    const content = input.value.trim();
+    if (!content) return;
 
-    fullscreen.style.background = inverted ? "white" : "black";
-    scrollText.style.color = inverted ? "black" : "white";
+    text.textContent = content.toUpperCase();
 
-    scrollText.textContent = txt.toUpperCase();
-
-    scrollText.style.fontSize = size.value + "vw";
-    scrollText.style.letterSpacing = spacing.value + "px";
+    text.style.fontSize = size.value + "vw";
 
     const duration = 80 - speed.value;
-    scrollText.style.animation = `scrollSide ${duration}s linear infinite`;
+    text.style.animation = `scroll ${duration}s linear infinite`;
 
     fullscreen.style.display = "block";
 
-    if (!document.fullscreenElement) {
-      fullscreen.requestFullscreen?.();
-    }
+    fullscreen.requestFullscreen?.();
   };
 
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") {
       fullscreen.style.display = "none";
-      scrollText.style.animation = "none";
+      text.style.animation = "none";
     }
   });
 </script>
