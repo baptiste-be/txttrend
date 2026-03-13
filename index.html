@@ -60,6 +60,11 @@
     white-space:nowrap;
   }
 
+  /* MIROIR PARFAIT : flip horizontal */
+  .mirror {
+    transform:translateY(-50%) scaleX(-1);
+  }
+
   #inner {
     display:inline-block;
     white-space:nowrap;
@@ -67,11 +72,6 @@
     text-transform:uppercase;
     line-height:1;
     font-size:clamp(3rem, 12vw, 10rem);
-  }
-
-  /* miroir visuel */
-  .flip {
-    transform:scaleX(-1);
   }
 
   @keyframes scroll {
@@ -105,27 +105,15 @@
 
   let mirrorMode = false;
 
-  // Fonction miroir parfait : ordre inversé + flip horizontal
-  function mirrorText(str) {
-    return str.split("").reverse().join("");
-  }
-
   mirrorBtn.onclick = () => {
     mirrorMode = !mirrorMode;
+    outer.classList.toggle("mirror", mirrorMode);
     mirrorBtn.textContent = mirrorMode ? "Normal" : "Miroir";
   };
 
   start.onclick = () => {
-    let txt = input.value.trim().toUpperCase();
+    const txt = input.value.trim().toUpperCase();
     if (!txt) return;
-
-    // miroir parfait
-    if (mirrorMode) {
-      txt = mirrorText(txt);
-      outer.classList.add("flip");
-    } else {
-      outer.classList.remove("flip");
-    }
 
     inner.textContent = txt;
 
