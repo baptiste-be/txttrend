@@ -11,7 +11,7 @@
     font-family: Inter, Arial, sans-serif;
   }
 
-  /* PAGE PRINCIPALE */
+  /* UI */
   .ui {
     padding:20px;
     max-width:700px;
@@ -23,40 +23,32 @@
 
   textarea {
     width:100%;
-    height:160px;
+    height:150px;
     background:#111;
     border:1px solid #333;
     color:#fff;
     padding:12px;
-    font-size:16px;
+    font-size:18px;
     border-radius:8px;
     resize:none;
   }
 
-  .row {
-    display:flex;
-    gap:10px;
-  }
-
   button {
-    flex:1;
     padding:14px;
     border:none;
     border-radius:8px;
-    font-size:14px;
-    text-transform:uppercase;
+    font-size:15px;
     font-weight:600;
     cursor:pointer;
+    text-transform:uppercase;
   }
 
   #start { background:#fff; color:#000; }
   #mirror { background:#000; color:#fff; border:1px solid #fff; }
 
-  input[type="range"] {
-    width:100%;
-  }
+  input[type="range"] { width:100%; }
 
-  /* MODE TEXTE GÉANT */
+  /* FULLSCREEN */
   #fullscreen {
     display:none;
     position:fixed;
@@ -78,14 +70,15 @@
     text-transform:uppercase;
     white-space:nowrap;
     line-height:1;
+    transform-origin:center;
   }
 
-  /* Miroir */
+  /* MIRROR */
   .mirror {
     transform:scaleX(-1);
   }
 
-  /* Défilement */
+  /* ANIMATION */
   @keyframes scroll {
     from { transform:translateX(100%); }
     to { transform:translateX(-200%); }
@@ -98,15 +91,13 @@
   <textarea id="input" placeholder="Écris ici..."></textarea>
 
   <label>Vitesse</label>
-  <input type="range" id="speed" min="5" max="60" value="20">
+  <input type="range" id="speed" min="5" max="100" value="40">
 
   <label>Taille du texte</label>
   <input type="range" id="size" min="10" max="40" value="20">
 
-  <div class="row">
-    <button id="start">Lancer</button>
-    <button id="mirror">Miroir</button>
-  </div>
+  <button id="start">Lancer</button>
+  <button id="mirror">Miroir</button>
 </div>
 
 <div id="fullscreen">
@@ -129,8 +120,8 @@
 
   mirrorBtn.onclick = () => {
     mirrored = !mirrored;
-    mirrorBtn.textContent = mirrored ? "Normal" : "Miroir";
     text.classList.toggle("mirror", mirrored);
+    mirrorBtn.textContent = mirrored ? "Normal" : "Miroir";
   };
 
   start.onclick = () => {
@@ -139,13 +130,14 @@
 
     text.textContent = content.toUpperCase();
 
+    // Taille responsive (jamais minuscule)
     text.style.fontSize = size.value + "vw";
 
-    const duration = 80 - speed.value;
+    // Vitesse réelle
+    const duration = 120 - speed.value; 
     text.style.animation = `scroll ${duration}s linear infinite`;
 
     fullscreen.style.display = "block";
-
     fullscreen.requestFullscreen?.();
   };
 
