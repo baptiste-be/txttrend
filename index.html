@@ -5,128 +5,59 @@
 <title>txttrend</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  :root {
-    --bg:#000;
-    --fg:#fff;
-  }
   body {
-    background:var(--bg);
-    color:var(--fg);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", Arial, sans-serif;
+    background:#000;
+    color:#fff;
+    font-family: Arial, sans-serif;
   }
 
-  /* UI PRINCIPALE */
-  .app {
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  .ui {
     padding:20px;
-  }
-
-  .panel {
-    width:100%;
-    max-width:720px;
+    max-width:700px;
+    margin:auto;
     display:flex;
     flex-direction:column;
-    gap:16px;
-  }
-
-  .brand {
-    font-size:18px;
-    letter-spacing:0.25em;
-    text-transform:uppercase;
-    opacity:0.7;
+    gap:15px;
   }
 
   textarea {
     width:100%;
     height:150px;
-    background:#050505;
+    background:#111;
     border:1px solid #333;
     color:#fff;
     padding:14px;
-    font-size:16px;
+    font-size:18px;
     border-radius:10px;
     resize:none;
   }
 
-  .controls {
-    display:grid;
-    grid-template-columns:1fr;
-    gap:12px;
-  }
-
-  .slider-group {
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:0.12em;
-  }
-
-  input[type="range"] {
-    width:100%;
-  }
-
-  .buttons {
-    display:flex;
-    gap:10px;
-  }
-
   button {
-    flex:1;
     padding:14px;
-    border-radius:999px;
-    border:1px solid #fff;
-    background:#fff;
-    color:#000;
-    font-size:13px;
+    border-radius:8px;
+    border:none;
+    font-size:15px;
     font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:0.12em;
     cursor:pointer;
+    text-transform:uppercase;
   }
 
-  button.secondary {
-    background:transparent;
-    color:#fff;
-  }
+  #start { background:#fff; color:#000; }
+  #mirror { background:#000; color:#fff; border:1px solid #fff; }
 
-  button:active {
-    transform:scale(0.98);
-  }
-
-  @media (min-width:640px) {
-    .controls {
-      grid-template-columns:1fr 1fr;
-      align-items:end;
-    }
-  }
-
-  /* MODE TEXTE GÉANT */
   #fullscreen {
     display:none;
     position:fixed;
     inset:0;
     background:#000;
     overflow:hidden;
-    cursor:none;
   }
 
   #outer {
     position:absolute;
     top:50%;
-    left:0;
-    width:100%;
     transform:translateY(-50%);
     white-space:nowrap;
-  }
-
-  /* miroir sur outer, animation sur inner -> pas de conflit */
-  .mirror {
-    transform:translateY(-50%) scaleX(-1);
   }
 
   #inner {
@@ -135,8 +66,12 @@
     font-weight:900;
     text-transform:uppercase;
     line-height:1;
-    /* texte géant mais contrôlé : jamais minuscule, jamais ridicule */
     font-size:clamp(3rem, 12vw, 10rem);
+  }
+
+  /* miroir visuel */
+  .flip {
+    transform:scaleX(-1);
   }
 
   @keyframes scroll {
@@ -147,28 +82,10 @@
 </head>
 <body>
 
-<div class="app">
-  <div class="panel">
-    <div class="brand">txttrend</div>
-
-    <textarea id="input" placeholder="Écris ton texte ici..."></textarea>
-
-    <div class="controls">
-      <div class="slider-group">
-        <span>Vitesse</span>
-        <input type="range" id="speed" min="10" max="90" value="45">
-      </div>
-      <div class="slider-group">
-        <span>Taille</span>
-        <input type="range" id="size" min="8" max="18" value="12">
-      </div>
-    </div>
-
-    <div class="buttons">
-      <button id="start">Lancer</button>
-      <button id="mirror" class="secondary">Miroir</button>
-    </div>
-  </div>
+<div class="ui">
+  <textarea id="input" placeholder="Écris ici..."></textarea>
+  <button id="start">Lancer</button>
+  <button id="mirror">Miroir</button>
 </div>
 
 <div id="fullscreen">
@@ -178,38 +95,41 @@
 </div>
 
 <script>
-  const input   = document.getElementById("input");
-  const speed   = document.getElementById("speed");
-  const size    = document.getElementById("size");
-  const start   = document.getElementById("start");
-  const mirrorB = document.getElementById("mirror");
+  const input = document.getElementById("input");
+  const start = document.getElementById("start");
+  const mirrorBtn = document.getElementById("mirror");
 
   const fullscreen = document.getElementById("fullscreen");
-  const outer      = document.getElementById("outer");
-  const inner      = document.getElementById("inner");
+  const outer = document.getElementById("outer");
+  const inner = document.getElementById("inner");
 
-  let mirrored = false;
+  let mirrorMode = false;
 
-  mirrorB.onclick = () => {
-    mirrored = !mirrored;
-    outer.classList.toggle("mirror", mirrored);
-    mirrorB.textContent = mirrored ? "Normal" : "Miroir";
+  // Fonction miroir parfait : ordre inversé + flip horizontal
+  function mirrorText(str) {
+    return str.split("").reverse().join("");
+  }
+
+  mirrorBtn.onclick = () => {
+    mirrorMode = !mirrorMode;
+    mirrorBtn.textContent = mirrorMode ? "Normal" : "Miroir";
   };
 
   start.onclick = () => {
-    const content = input.value.trim();
-    if (!content) return;
+    let txt = input.value.trim().toUpperCase();
+    if (!txt) return;
 
-    inner.textContent = content.toUpperCase();
+    // miroir parfait
+    if (mirrorMode) {
+      txt = mirrorText(txt);
+      outer.classList.add("flip");
+    } else {
+      outer.classList.remove("flip");
+    }
 
-    // taille : slider -> facteur sur clamp
-    const base = Number(size.value); // 8–18
-    inner.style.fontSize = `clamp(3rem, ${base}vw, 11rem)`;
+    inner.textContent = txt;
 
-    // vitesse : slider -> durée
-    const v = Number(speed.value); // 10–90
-    const duration = 4 + (100 - v) * 0.35; // plus le slider est à droite, plus c'est rapide
-    inner.style.animation = `scroll ${duration}s linear infinite`;
+    inner.style.animation = `scroll 18s linear infinite`;
 
     fullscreen.style.display = "block";
     fullscreen.requestFullscreen?.();
@@ -219,17 +139,8 @@
     if (e.key === "Escape") {
       fullscreen.style.display = "none";
       inner.style.animation = "none";
-      if (document.fullscreenElement) {
-        document.exitFullscreen?.();
-      }
+      document.exitFullscreen?.();
     }
-  });
-
-  // Tap sur mobile pour quitter
-  fullscreen.addEventListener("click", () => {
-    fullscreen.style.display = "none";
-    inner.style.animation = "none";
-    document.exitFullscreen?.();
   });
 </script>
 
