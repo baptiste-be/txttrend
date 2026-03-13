@@ -1,230 +1,137 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>txttrend</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<title>txttrend</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background:#000;
+    color:#fff;
+  }
 
-    body {
-      background: #000;
-      color: #fff;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  /* PAGE NORMALE */
+  .container {
+    padding:20px;
+    max-width:800px;
+    margin:auto;
+  }
 
-    header {
-      padding: 10px 16px;
-      border-bottom: 1px solid #333;
-      color: #fff;
-      font-size: 14px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
+  textarea {
+    width:100%;
+    height:200px;
+    background:#111;
+    color:#fff;
+    border:1px solid #444;
+    padding:10px;
+    font-size:16px;
+  }
 
-    main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
+  button {
+    margin-top:15px;
+    padding:12px 20px;
+    font-size:14px;
+    text-transform:uppercase;
+    cursor:pointer;
+    border:none;
+  }
 
-    .left {
-      width: 35%;
-      border-right: 1px solid #333;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+  #start { background:white; color:black; }
+  #invert { background:black; color:white; border:1px solid white; }
 
-    .left label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: #aaa;
-    }
+  /* MODE TEXTE GÉANT */
+  #fullscreenMode {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:black;
+    color:white;
+    overflow:hidden;
+  }
 
-    textarea {
-      flex: 1;
-      width: 100%;
-      background: #000;
-      color: #fff;
-      border: 1px solid #333;
-      padding: 10px;
-      resize: none;
-      font-family: inherit;
-      font-size: 14px;
-    }
+  #scrollText {
+    position:absolute;
+    width:100%;
+    top:100%;
+    font-size:10vw;
+    font-weight:900;
+    text-transform:uppercase;
+    white-space:pre-wrap;
+    text-align:center;
+    line-height:1.1;
+  }
 
-    .controls {
-      display: flex;
-      gap: 8px;
-    }
-
-    button {
-      flex: 1;
-      background: #fff;
-      color: #000;
-      border: none;
-      padding: 10px 12px;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    button.secondary {
-      background: #000;
-      color: #fff;
-      border: 1px solid #fff;
-    }
-
-    button:hover {
-      background: #ccc;
-      color: #000;
-    }
-
-    button.secondary:hover {
-      background: #fff;
-      color: #000;
-    }
-
-    .right {
-      flex: 1;
-      position: relative;
-      background: #000;
-      overflow: hidden;
-    }
-
-    #display {
-      position: absolute;
-      inset: 0;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-wrap: wrap;
-      align-content: flex-start;
-      gap: 8px;
-    }
-
-    .letter {
-      font-size: 8vw; /* géant, responsive */
-      line-height: 1;
-      font-weight: 700;
-      color: #fff;
-      text-transform: uppercase;
-      white-space: pre;
-    }
-
-    .cursor {
-      width: 0.15em;
-      background: #fff;
-      animation: blink 0.8s steps(1) infinite;
-      align-self: flex-end;
-      height: 1em;
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      50.01%, 100% { opacity: 0; }
-    }
-  </style>
+  /* ANIMATION DEFILEMENT */
+  @keyframes scrollUp {
+    from { top:100%; }
+    to { top:-200%; }
+  }
+</style>
 </head>
 <body>
-  <header>txttrend</header>
 
-  <main>
-    <section class="left">
-      <label for="inputText">Texte</label>
-      <textarea id="inputText" placeholder="Écris ton texte ici..."></textarea>
+<div class="container">
+  <h1>txttrend</h1>
+  <p>Écris ton texte, puis lance-le en mode géant.</p>
 
-      <div class="controls">
-        <button id="fullscreenBtn">Plein écran</button>
-        <button id="startBtn" class="secondary">Lancer le texte</button>
-      </div>
-    </section>
+  <textarea id="textInput" placeholder="Ton texte ici..."></textarea>
 
-    <section class="right" id="viewer">
-      <div id="display"></div>
-    </section>
-  </main>
+  <button id="start">Lancer le texte</button>
+  <button id="invert">Mode inversé</button>
+</div>
 
-  <script>
-    const textarea = document.getElementById('inputText');
-    const display = document.getElementById('display');
-    const startBtn = document.getElementById('startBtn');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const viewer = document.getElementById('viewer');
+<!-- MODE PLEIN ÉCRAN -->
+<div id="fullscreenMode">
+  <div id="scrollText"></div>
+</div>
 
-    let intervalId = null;
+<script>
+  const startBtn = document.getElementById("start");
+  const invertBtn = document.getElementById("invert");
+  const textInput = document.getElementById("textInput");
+  const fullscreen = document.getElementById("fullscreenMode");
+  const scrollText = document.getElementById("scrollText");
 
-    function clearDisplay() {
-      display.innerHTML = '';
+  let inverted = false;
+
+  // MODE INVERSÉ
+  invertBtn.onclick = () => {
+    inverted = !inverted;
+    invertBtn.textContent = inverted ? "Mode normal" : "Mode inversé";
+  };
+
+  // LANCER LE TEXTE
+  startBtn.onclick = () => {
+    const txt = textInput.value.trim();
+    if (!txt) return;
+
+    // Appliquer couleurs selon mode
+    fullscreen.style.background = inverted ? "white" : "black";
+    scrollText.style.color = inverted ? "black" : "white";
+
+    scrollText.textContent = txt.toUpperCase();
+
+    fullscreen.style.display = "block";
+
+    // Animation
+    scrollText.style.animation = "none";
+    void scrollText.offsetWidth; // reset animation
+    scrollText.style.animation = "scrollUp 12s linear forwards";
+
+    // Plein écran natif
+    if (!document.fullscreenElement) {
+      fullscreen.requestFullscreen?.();
     }
+  };
 
-    function scrollToBottom() {
-      display.scrollTop = display.scrollHeight;
+  // Quitter plein écran avec Échap
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      fullscreen.style.display = "none";
     }
+  });
+</script>
 
-    function startText() {
-      const text = textarea.value.toUpperCase();
-      if (!text.trim()) return;
-
-      clearDisplay();
-      if (intervalId) clearInterval(intervalId);
-
-      const chars = text.split('');
-      let index = 0;
-
-      const cursor = document.createElement('div');
-      cursor.className = 'cursor';
-      display.appendChild(cursor);
-
-      intervalId = setInterval(() => {
-        if (index >= chars.length) {
-          clearInterval(intervalId);
-          intervalId = null;
-          cursor.remove();
-          return;
-        }
-
-        const ch = chars[index];
-        const span = document.createElement('span');
-        span.className = 'letter';
-        span.textContent = ch === ' ' ? ' ' : ch;
-
-        display.insertBefore(span, cursor);
-        scrollToBottom();
-        index++;
-      }, 80); // vitesse du défilement (ms par lettre)
-    }
-
-    function toggleFullscreen() {
-      const elem = viewer;
-      if (!document.fullscreenElement) {
-        if (elem.requestFullscreen) elem.requestFullscreen();
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-      }
-    }
-
-    startBtn.addEventListener('click', startText);
-    fullscreenBtn.addEventListener('click', toggleFullscreen);
-
-    // Lancer avec Ctrl+Enter
-    textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        startText();
-      }
-    });
-  </script>
 </body>
 </html>
