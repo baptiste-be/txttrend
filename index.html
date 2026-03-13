@@ -14,18 +14,24 @@
   /* PAGE NORMALE */
   .container {
     padding:20px;
-    max-width:800px;
+    max-width:900px;
     margin:auto;
   }
 
   textarea {
     width:100%;
-    height:200px;
+    height:180px;
     background:#111;
     color:#fff;
     border:1px solid #444;
     padding:10px;
     font-size:16px;
+  }
+
+  label { display:block; margin-top:15px; font-size:14px; }
+
+  input[type="range"] {
+    width:100%;
   }
 
   button {
@@ -52,20 +58,15 @@
 
   #scrollText {
     position:absolute;
-    width:100%;
-    top:100%;
-    font-size:10vw;
+    left:100%;
+    white-space:nowrap;
     font-weight:900;
     text-transform:uppercase;
-    white-space:pre-wrap;
-    text-align:center;
-    line-height:1.1;
   }
 
-  /* ANIMATION DEFILEMENT */
-  @keyframes scrollUp {
-    from { top:100%; }
-    to { top:-200%; }
+  @keyframes scrollSide {
+    from { left:100%; }
+    to { left:-200%; }
   }
 </style>
 </head>
@@ -73,9 +74,18 @@
 
 <div class="container">
   <h1>txttrend</h1>
-  <p>Écris ton texte, puis lance-le en mode géant.</p>
+  <p>Écris ton texte, choisis la vitesse et le style, puis lance-le.</p>
 
   <textarea id="textInput" placeholder="Ton texte ici..."></textarea>
+
+  <label>Vitesse du défilement</label>
+  <input type="range" id="speed" min="5" max="40" value="15">
+
+  <label>Taille du texte</label>
+  <input type="range" id="size" min="5" max="20" value="10">
+
+  <label>Espacement des lettres</label>
+  <input type="range" id="spacing" min="0" max="40" value="5">
 
   <button id="start">Lancer le texte</button>
   <button id="invert">Mode inversé</button>
@@ -93,42 +103,43 @@
   const fullscreen = document.getElementById("fullscreenMode");
   const scrollText = document.getElementById("scrollText");
 
+  const speed = document.getElementById("speed");
+  const size = document.getElementById("size");
+  const spacing = document.getElementById("spacing");
+
   let inverted = false;
 
-  // MODE INVERSÉ
   invertBtn.onclick = () => {
     inverted = !inverted;
     invertBtn.textContent = inverted ? "Mode normal" : "Mode inversé";
   };
 
-  // LANCER LE TEXTE
   startBtn.onclick = () => {
     const txt = textInput.value.trim();
     if (!txt) return;
 
-    // Appliquer couleurs selon mode
     fullscreen.style.background = inverted ? "white" : "black";
     scrollText.style.color = inverted ? "black" : "white";
 
     scrollText.textContent = txt.toUpperCase();
 
+    scrollText.style.fontSize = size.value + "vw";
+    scrollText.style.letterSpacing = spacing.value + "px";
+
+    const duration = 60 - speed.value;
+    scrollText.style.animation = `scrollSide ${duration}s linear infinite`;
+
     fullscreen.style.display = "block";
 
-    // Animation
-    scrollText.style.animation = "none";
-    void scrollText.offsetWidth; // reset animation
-    scrollText.style.animation = "scrollUp 12s linear forwards";
-
-    // Plein écran natif
     if (!document.fullscreenElement) {
       fullscreen.requestFullscreen?.();
     }
   };
 
-  // Quitter plein écran avec Échap
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") {
       fullscreen.style.display = "none";
+      scrollText.style.animation = "none";
     }
   });
 </script>
