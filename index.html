@@ -30,9 +30,7 @@
 
   label { display:block; margin-top:15px; font-size:14px; }
 
-  input[type="range"] {
-    width:100%;
-  }
+  input[type="range"] { width:100%; }
 
   button {
     margin-top:15px;
@@ -56,17 +54,23 @@
     overflow:hidden;
   }
 
-  #scrollText {
+  #scrollWrapper {
     position:absolute;
-    left:100%;
+    top:50%;
+    transform:translateY(-50%);
     white-space:nowrap;
+  }
+
+  #scrollText {
+    display:inline-block;
     font-weight:900;
     text-transform:uppercase;
+    white-space:nowrap;
   }
 
   @keyframes scrollSide {
-    from { left:100%; }
-    to { left:-200%; }
+    from { transform:translateX(100%); }
+    to { transform:translateX(-200%); }
   }
 </style>
 </head>
@@ -79,13 +83,13 @@
   <textarea id="textInput" placeholder="Ton texte ici..."></textarea>
 
   <label>Vitesse du défilement</label>
-  <input type="range" id="speed" min="5" max="40" value="15">
+  <input type="range" id="speed" min="5" max="60" value="20">
 
-  <label>Taille du texte</label>
-  <input type="range" id="size" min="5" max="20" value="10">
+  <label>Taille du texte (en % de l’écran)</label>
+  <input type="range" id="size" min="5" max="30" value="15">
 
   <label>Espacement des lettres</label>
-  <input type="range" id="spacing" min="0" max="40" value="5">
+  <input type="range" id="spacing" min="0" max="50" value="5">
 
   <button id="start">Lancer le texte</button>
   <button id="invert">Mode inversé</button>
@@ -93,7 +97,9 @@
 
 <!-- MODE PLEIN ÉCRAN -->
 <div id="fullscreenMode">
-  <div id="scrollText"></div>
+  <div id="scrollWrapper">
+    <div id="scrollText"></div>
+  </div>
 </div>
 
 <script>
@@ -102,6 +108,7 @@
   const textInput = document.getElementById("textInput");
   const fullscreen = document.getElementById("fullscreenMode");
   const scrollText = document.getElementById("scrollText");
+  const wrapper = document.getElementById("scrollWrapper");
 
   const speed = document.getElementById("speed");
   const size = document.getElementById("size");
@@ -126,7 +133,7 @@
     scrollText.style.fontSize = size.value + "vw";
     scrollText.style.letterSpacing = spacing.value + "px";
 
-    const duration = 60 - speed.value;
+    const duration = 80 - speed.value;
     scrollText.style.animation = `scrollSide ${duration}s linear infinite`;
 
     fullscreen.style.display = "block";
